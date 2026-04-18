@@ -3,176 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Calculadora</title>
+    <title>Calculadora Mágica</title>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
     <style>
-        :root {
-            --bg-black: #000000; --gray-dark: #333333; --gray-light: #A5A5A5;
-            --orange: #FF9F0A; --text-white: #FFFFFF;
-        }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body {
-            background-color: var(--bg-black); color: var(--text-white);
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-            margin: 0; display: flex; justify-content: center; align-items: flex-end;
-            height: 100vh; overflow: hidden;
-        }
+        :root { --bg-black: #000; --gray-dark: #333; --orange: #FF9F0A; }
+        body { background: var(--bg-black); color: #fff; font-family: sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; overflow: hidden; }
         #video-input { position: absolute; width: 1px; height: 1px; opacity: 0; }
-        #status-dot {
-            position: absolute; top: 15px; left: 15px; width: 8px; height: 8px;
-            border-radius: 50%; background: #1a1a1a; z-index: 2000; transition: background 0.3s;
-        }
-        .calculator { width: 100%; max-width: 414px; padding: 0 20px 40px 20px; z-index: 10; }
-        .display-container {
-            width: 100%; height: 180px; display: flex; flex-direction: column;
-            justify-content: flex-end; padding: 0 10px; margin-bottom: 15px;
-        }
-        .display {
-            font-size: clamp(2rem, 12vw, 5.5rem); font-weight: 300;
-            text-align: right; letter-spacing: -1px;
-        }
-        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-        .btn {
-            aspect-ratio: 1; border-radius: 50%; border: none; font-size: 2.1rem;
-            display: flex; justify-content: center; align-items: center;
-        }
-        .btn-dark { background-color: var(--gray-dark); color: white; }
-        .btn-light { background-color: var(--gray-light); color: black; font-size: 1.7rem; }
-        .btn-orange { background-color: var(--orange); color: white; font-size: 2.4rem; }
-        .btn-zero { grid-column: span 2; aspect-ratio: auto; border-radius: 100px; justify-content: flex-start; padding-left: 35px; }
-        .magic-flash { animation: flash 0.6s ease; }
-        @keyframes flash { from { opacity: 0.4; } to { opacity: 1; } }
+        #status-dot { position: absolute; top: 20px; left: 20px; width: 10px; height: 10px; border-radius: 50%; background: #222; z-index: 100; transition: 0.3s; }
+        .calculator { width: 100%; max-width: 400px; padding: 20px; }
+        .display { font-size: 5rem; text-align: right; margin-bottom: 20px; font-weight: 300; min-height: 1.2em; }
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .btn { aspect-ratio: 1; border-radius: 50%; border: none; font-size: 1.5rem; background: var(--gray-dark); color: #fff; cursor: pointer; }
+        .btn-orange { background: var(--orange); }
+        .btn-zero { grid-column: span 2; aspect-ratio: auto; border-radius: 50px; text-align: left; padding-left: 30px; }
+        .flash { animation: flash-anim 0.5s; }
+        @keyframes flash-anim { from { opacity: 0.3; } to { opacity: 1; } }
     </style>
 </head>
-<body onclick="startListeners()">
+<body onclick="init()">
 
     <video id="video-input"></video>
-    <div id="status-dot" id="dot"></div>
+    <div id="status-dot"></div>
 
     <div class="calculator">
-        <div class="display-container">
-            <div class="display" id="screen">0</div>
-        </div>
+        <div class="display" id="screen">0</div>
         <div class="grid">
-            <button class="btn btn-dark" onclick="clearScreen()">AC</button>
-            <button class="btn btn-light">+/-</button>
-            <button class="btn btn-light">%</button>
+            <button class="btn" style="background:#a5a5a5;color:#000">AC</button>
+            <button class="btn" style="background:#a5a5a5;color:#000">+/-</button>
+            <button class="btn" style="background:#a5a5a5;color:#000">%</button>
             <button class="btn btn-orange">÷</button>
-            <button class="btn btn-dark" onclick="appendNumber('7')">7</button>
-            <button class="btn btn-dark" onclick="appendNumber('8')">8</button>
-            <button class="btn btn-dark" onclick="appendNumber('9')">9</button>
-            <button class="btn btn-orange">×</button>
-            <button class="btn btn-dark" onclick="appendNumber('4')">4</button>
-            <button class="btn btn-dark" onclick="appendNumber('5')">5</button>
-            <button class="btn btn-dark" onclick="appendNumber('6')">6</button>
-            <button class="btn btn-orange">−</button>
-            <button class="btn btn-dark" onclick="appendNumber('1')">1</button>
-            <button class="btn btn-dark" onclick="appendNumber('2')">2</button>
-            <button class="btn btn-dark" onclick="appendNumber('3')">3</button>
-            <button class="btn btn-orange">+</button>
-            <button class="btn btn-dark btn-zero" onclick="appendNumber('0')">0</button>
-            <button class="btn btn-dark">,</button>
-            <button class="btn btn-orange">=</button>
+            <button class="btn">7</button><button class="btn">8</button><button class="btn">9</button><button class="btn btn-orange">×</button>
+            <button class="btn">4</button><button class="btn">5</button><button class="btn">6</button><button class="btn btn-orange">−</button>
+            <button class="btn">1</button><button class="btn">2</button><button class="btn">3</button><button class="btn btn-orange">+</button>
+            <button class="btn btn-zero">0</button><button class="btn">,</button><button class="btn btn-orange">=</button>
         </div>
     </div>
 
     <script>
-        const screen = document.getElementById('screen');
-        const dot = document.getElementById('status-dot');
-        const videoElement = document.getElementById('video-input');
-        
         let detectedName = "";
-        let lastHandState = "closed";
-        let listenersStarted = false;
+        let isStarted = false;
+        let lastState = "closed";
 
-        // --- RECONOCIMIENTO DE VOZ ---
-        const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        let rec;
-        if (Recognition) {
-            rec = new Recognition();
+        // VOZ
+        const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const rec = Speech ? new Speech() : null;
+        if (rec) {
             rec.lang = 'es-ES';
             rec.continuous = true;
             rec.interimResults = true;
-
-            rec.onresult = (event) => {
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    let text = event.results[i][0].transcript.toLowerCase();
-                    console.log("Escuchando...", text);
-                    if (text.includes("te llamas")) {
-                        let words = text.split("te llamas");
-                        if (words.length > 1) {
-                            detectedName = words[1].trim().toUpperCase();
-                            dot.style.background = "#FF9F0A"; // Naranja: ¡Nombre capturado!
-                        }
-                    }
+            rec.onresult = (e) => {
+                let current = Array.from(e.results).map(r => r[0].transcript).join(" ").toLowerCase();
+                if (current.includes("te llamas")) {
+                    let parts = current.split("te llamas");
+                    detectedName = parts[parts.length - 1].trim().toUpperCase();
+                    document.getElementById('status-dot').style.background = "#FF9F0A"; // Naranja: ¡Nombre listo!
                 }
             };
-            
-            rec.onend = () => { if(listenersStarted) rec.start(); }; // Reinicio automático
         }
 
-        // --- INICIO DE ESCUCHA (Requiere toque) ---
-        function startListeners() {
-            if (listenersStarted) return;
-            listenersStarted = true;
+        function init() {
+            if (isStarted) return;
+            isStarted = true;
             if (rec) rec.start();
-            dot.style.background = "#FF3B30"; // Rojo: Micrófono activo
-            vibrate(50);
+            document.getElementById('status-dot').style.background = "red"; // Rojo: Escuchando
+            if (navigator.vibrate) navigator.vibrate(50);
         }
 
-        // --- DETECCIÓN DE MANO ---
+        // MANOS
         const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
         hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.5 });
-
-        hands.onResults((results) => {
-            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                const lm = results.multiHandLandmarks[0];
-                // Lógica de mano abierta (puntas de 3 dedos arriba)
-                const isOpen = lm[8].y < lm[6].y && lm[12].y < lm[10].y && lm[16].y < lm[14].y;
-                
-                if (isOpen && lastHandState === "closed") {
-                    triggerMagic(true);
-                    lastHandState = "open";
-                } else if (!isOpen && lastHandState === "open") {
-                    triggerMagic(false);
-                    lastHandState = "closed";
+        hands.onResults((res) => {
+            if (res.multiHandLandmarks && res.multiHandLandmarks.length > 0) {
+                const l = res.multiHandLandmarks[0];
+                const open = l[8].y < l[6].y && l[12].y < l[10].y;
+                if (open && lastState === "closed") {
+                    reveal(true); lastState = "open";
+                } else if (!open && lastState === "open") {
+                    reveal(false); lastState = "closed";
                 }
             }
         });
 
-        const camera = new Camera(videoElement, {
-            onFrame: async () => { await hands.send({image: videoElement}); },
+        const cam = new Camera(document.getElementById('video-input'), {
+            onFrame: async () => { await hands.send({image: document.getElementById('video-input')}); },
             width: 640, height: 480
         });
-        camera.start();
+        cam.start();
 
-        function triggerMagic(open) {
-            if (open) {
-                vibrate(40);
-                screen.classList.add('magic-flash');
-                screen.innerText = detectedName || "123.456.789";
-                setTimeout(() => screen.classList.remove('magic-flash'), 500);
+        function reveal(show) {
+            const s = document.getElementById('screen');
+            if (show) {
+                s.innerText = detectedName || "123.456.789";
+                s.classList.add('flash');
+                setTimeout(() => s.classList.remove('flash'), 500);
             } else {
-                screen.innerText = "0";
-                vibrate(20);
+                s.innerText = "0";
             }
         }
-
-        function clearScreen() {
-            screen.innerText = "0";
-            detectedName = "";
-            dot.style.background = "#FF3B30";
-            vibrate(30);
-        }
-
-        function appendNumber(n) {
-            if (screen.innerText === "0" || isNaN(screen.innerText.replace(/\./g,''))) screen.innerText = n;
-            else screen.innerText += n;
-            vibrate(20);
-        }
-
-        function vibrate(ms) { if (navigator.vibrate) navigator.vibrate(ms); }
     </script>
 </body>
 </html>
