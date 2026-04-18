@@ -3,104 +3,258 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Calculadora Mágica</title>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <title>Calculadora</title>
     <style>
-        :root { --bg-black: #000; --gray-dark: #333; --orange: #FF9F0A; }
-        body { background: var(--bg-black); color: #fff; font-family: sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; overflow: hidden; }
-        #video-input { position: absolute; width: 1px; height: 1px; opacity: 0; }
-        #status-dot { position: absolute; top: 20px; left: 20px; width: 10px; height: 10px; border-radius: 50%; background: #222; z-index: 100; transition: 0.3s; }
-        .calculator { width: 100%; max-width: 400px; padding: 20px; }
-        .display { font-size: 5rem; text-align: right; margin-bottom: 20px; font-weight: 300; min-height: 1.2em; }
-        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .btn { aspect-ratio: 1; border-radius: 50%; border: none; font-size: 1.5rem; background: var(--gray-dark); color: #fff; cursor: pointer; }
-        .btn-orange { background: var(--orange); }
-        .btn-zero { grid-column: span 2; aspect-ratio: auto; border-radius: 50px; text-align: left; padding-left: 30px; }
-        .flash { animation: flash-anim 0.5s; }
-        @keyframes flash-anim { from { opacity: 0.3; } to { opacity: 1; } }
+        :root {
+            --bg-black: #000000;
+            --gray-dark: #333333;
+            --gray-light: #A5A5A5;
+            --orange: #FF9F0A;
+            --text-white: #FFFFFF;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg-black);
+            color: var(--text-white);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .calculator {
+            width: 100%;
+            max-width: 414px;
+            padding: 0 20px 40px 20px;
+        }
+
+        #magic-trigger {
+            position: absolute; top: 0; left: 0; width: 100%; height: 30%; z-index: 1000;
+        }
+
+        .display-container {
+            width: 100%;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 0 10px;
+            margin-bottom: 15px;
+        }
+
+        .history {
+            color: #888;
+            font-size: 1.6rem;
+            text-align: right;
+            min-height: 2rem;
+            font-weight: 400;
+            margin-bottom: 5px;
+        }
+
+        .display {
+            font-size: clamp(2.5rem, 14vw, 5.5rem);
+            font-weight: 300;
+            white-space: nowrap;
+            letter-spacing: -1px;
+            text-align: right;
+            max-width: 100%;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .btn {
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: none;
+            font-size: 2.1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .btn:active { filter: brightness(1.4); }
+        .btn-dark { background-color: var(--gray-dark); color: white; }
+        .btn-light { background-color: var(--gray-light); color: black; font-size: 1.7rem; }
+        .btn-orange { background-color: var(--orange); color: white; font-size: 2.4rem; }
+        
+        .btn-zero {
+            grid-column: span 2;
+            aspect-ratio: auto;
+            border-radius: 100px;
+            justify-content: flex-start;
+            padding-left: 35px;
+        }
+
+        .backspace-icon { width: 32px; height: 32px; fill: white; }
     </style>
 </head>
-<body onclick="init()">
+<body>
 
-    <video id="video-input"></video>
-    <div id="status-dot"></div>
+    <div id="magic-trigger"></div>
 
     <div class="calculator">
-        <div class="display" id="screen">0</div>
+        <div class="display-container">
+            <div class="history" id="history"></div>
+            <div class="display" id="screen">0</div>
+        </div>
+        
         <div class="grid">
-            <button class="btn" style="background:#a5a5a5;color:#000">AC</button>
-            <button class="btn" style="background:#a5a5a5;color:#000">+/-</button>
-            <button class="btn" style="background:#a5a5a5;color:#000">%</button>
-            <button class="btn btn-orange">÷</button>
-            <button class="btn">7</button><button class="btn">8</button><button class="btn">9</button><button class="btn btn-orange">×</button>
-            <button class="btn">4</button><button class="btn">5</button><button class="btn">6</button><button class="btn btn-orange">−</button>
-            <button class="btn">1</button><button class="btn">2</button><button class="btn">3</button><button class="btn btn-orange">+</button>
-            <button class="btn btn-zero">0</button><button class="btn">,</button><button class="btn btn-orange">=</button>
+            <button class="btn btn-dark" onclick="handleBackspace()">
+                <svg class="backspace-icon" viewBox="0 0 24 24"><path d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-3 12.59L17.59 17 14 13.41 10.41 17 9 15.59 12.59 12 9 8.41 10.41 7 14 10.59 17.59 7 19 8.41 15.41 12 19 15.59z"/></svg>
+            </button>
+            <button class="btn btn-light" id="clear-btn" onclick="clearScreen()">AC</button>
+            <button class="btn btn-light" onclick="vibrate()">%</button>
+            <button class="btn btn-orange" onclick="appendOperator('÷')">÷</button>
+            
+            <button class="btn btn-dark" onclick="appendNumber('7')">7</button>
+            <button class="btn btn-dark" onclick="appendNumber('8')">8</button>
+            <button class="btn btn-dark" onclick="appendNumber('9')">9</button>
+            <button class="btn btn-orange" onclick="appendOperator('×')">×</button>
+            
+            <button class="btn btn-dark" onclick="appendNumber('4')">4</button>
+            <button class="btn btn-dark" onclick="appendNumber('5')">5</button>
+            <button class="btn btn-dark" onclick="appendNumber('6')">6</button>
+            <button class="btn btn-orange" onclick="appendOperator('−')">−</button>
+            
+            <button class="btn btn-dark" onclick="appendNumber('1')">1</button>
+            <button class="btn btn-dark" onclick="appendNumber('2')">2</button>
+            <button class="btn btn-dark" onclick="appendNumber('3')">3</button>
+            <button class="btn btn-orange" onclick="appendOperator('+')">+</button>
+            
+            <button class="btn btn-dark btn-zero" onclick="appendNumber('0')">0</button>
+            <button class="btn btn-dark" onclick="appendNumber(',')">,</button>
+            <button class="btn btn-orange" onclick="calculate()">=</button>
         </div>
     </div>
 
     <script>
-        let detectedName = "";
-        let isStarted = false;
-        let lastState = "closed";
+        const screen = document.getElementById('screen');
+        const historyLine = document.getElementById('history');
+        const clearBtn = document.getElementById('clear-btn');
+        const trigger = document.getElementById('magic-trigger');
+        
+        let currentInput = '0'; 
+        let fullEquation = '';  
+        let isMagicMode = true;
+        let resultDisplayed = false;
 
-        // VOZ
-        const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const rec = Speech ? new Speech() : null;
-        if (rec) {
-            rec.lang = 'es-ES';
-            rec.continuous = true;
-            rec.interimResults = true;
-            rec.onresult = (e) => {
-                let current = Array.from(e.results).map(r => r[0].transcript).join(" ").toLowerCase();
-                if (current.includes("te llamas")) {
-                    let parts = current.split("te llamas");
-                    detectedName = parts[parts.length - 1].trim().toUpperCase();
-                    document.getElementById('status-dot').style.background = "#FF9F0A"; // Naranja: ¡Nombre listo!
+        function formatDisplay(val) {
+            // Dividimos por los operadores para formatear solo los números, manteniendo los operadores pegados
+            return val.split(/([×÷+−])/).map(part => {
+                if (!isNaN(part.replace(/\./g, '').replace(',', '.')) && part.trim() !== "") {
+                    let numParts = part.replace(/\./g, '').split(',');
+                    numParts[0] = numParts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                    return numParts.join(',');
                 }
-            };
+                return part; 
+            }).join('');
         }
 
-        function init() {
-            if (isStarted) return;
-            isStarted = true;
-            if (rec) rec.start();
-            document.getElementById('status-dot').style.background = "red"; // Rojo: Escuchando
-            if (navigator.vibrate) navigator.vibrate(50);
-        }
-
-        // MANOS
-        const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
-        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.5 });
-        hands.onResults((res) => {
-            if (res.multiHandLandmarks && res.multiHandLandmarks.length > 0) {
-                const l = res.multiHandLandmarks[0];
-                const open = l[8].y < l[6].y && l[12].y < l[10].y;
-                if (open && lastState === "closed") {
-                    reveal(true); lastState = "open";
-                } else if (!open && lastState === "open") {
-                    reveal(false); lastState = "closed";
-                }
-            }
-        });
-
-        const cam = new Camera(document.getElementById('video-input'), {
-            onFrame: async () => { await hands.send({image: document.getElementById('video-input')}); },
-            width: 640, height: 480
-        });
-        cam.start();
-
-        function reveal(show) {
-            const s = document.getElementById('screen');
-            if (show) {
-                s.innerText = detectedName || "123.456.789";
-                s.classList.add('flash');
-                setTimeout(() => s.classList.remove('flash'), 500);
+        function appendNumber(num) {
+            vibrate();
+            if (resultDisplayed) {
+                currentInput = num;
+                fullEquation = num;
+                historyLine.innerText = '';
+                resultDisplayed = false;
+            } else if (currentInput === '0' || (isMagicMode && currentInput === '123456789')) {
+                currentInput = num;
+                fullEquation = num;
             } else {
-                s.innerText = "0";
+                currentInput += num;
+                fullEquation += num;
+            }
+            isMagicMode = false;
+            clearBtn.innerText = 'C';
+            screen.innerText = formatDisplay(fullEquation);
+        }
+
+        function appendOperator(op) {
+            vibrate();
+            isMagicMode = false;
+            if (resultDisplayed) {
+                fullEquation = currentInput;
+                historyLine.innerText = '';
+                resultDisplayed = false;
+            }
+            // Si el último caracter es un operador, lo reemplaza
+            if (/[×÷+−]/.test(fullEquation.slice(-1))) {
+                fullEquation = fullEquation.slice(0, -1);
+            }
+            fullEquation += op;
+            screen.innerText = formatDisplay(fullEquation);
+        }
+
+        function calculate() {
+            if (!fullEquation || /[×÷+−]/.test(fullEquation.slice(-1)) || resultDisplayed) return;
+            vibrate();
+
+            let expression = fullEquation
+                .replace(/\./g, '')
+                .replace(/,/g, '.')
+                .replace(/×/g, '*')
+                .replace(/÷/g, '/')
+                .replace(/−/g, '-');
+
+            try {
+                let result = eval(expression);
+                historyLine.innerText = formatDisplay(fullEquation);
+                
+                currentInput = result.toString().replace('.', ',');
+                fullEquation = currentInput;
+                screen.innerText = formatDisplay(currentInput);
+                
+                resultDisplayed = true;
+                clearBtn.innerText = 'AC';
+            } catch (e) {
+                screen.innerText = 'Error';
             }
         }
+
+        function clearScreen() {
+            vibrate();
+            currentInput = '0';
+            fullEquation = '';
+            historyLine.innerText = '';
+            resultDisplayed = false;
+            isMagicMode = true; // Reinicia el modo truco al limpiar todo
+            clearBtn.innerText = 'AC';
+            screen.innerText = '0';
+        }
+
+        function handleBackspace() {
+            vibrate();
+            if (fullEquation.length > 1) {
+                fullEquation = fullEquation.slice(0, -1);
+            } else {
+                fullEquation = '0';
+                clearBtn.innerText = 'AC';
+            }
+            screen.innerText = formatDisplay(fullEquation || '0');
+        }
+
+        function executeMagic() {
+            if (!isMagicMode) return;
+            vibrate();
+            currentInput = '123456789';
+            fullEquation = '123456789';
+            screen.innerText = formatDisplay(fullEquation);
+        }
+
+        function vibrate() { if (navigator.vibrate) navigator.vibrate(30); }
+
+        trigger.addEventListener('touchstart', (e) => { e.preventDefault(); executeMagic(); });
+        trigger.addEventListener('mousedown', executeMagic);
     </script>
 </body>
 </html>
