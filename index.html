@@ -2,107 +2,100 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Calculator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Calculadora</title>
     <style>
         :root {
-            --bg-color: #000;
-            --btn-gray: #333333;
-            --btn-light: #a5a5a5;
-            --btn-orange: #ff9f0a;
-            --text-white: #ffffff;
+            --bg-black: #000000;
+            --gray-dark: #333333;
+            --gray-light: #A5A5A5;
+            --orange: #FF9F0A;
+            --text-white: #FFFFFF;
         }
 
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
         body {
-            background-color: var(--bg-color);
+            background-color: var(--bg-black);
             color: var(--text-white);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+            margin: 0;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-end;
             height: 100vh;
-            margin: 0;
             overflow: hidden;
-            user-select: none;
         }
 
         .calculator {
             width: 100%;
-            max-width: 400px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            box-sizing: border-box;
+            max-width: 414px;
+            padding: 0 20px 40px 20px;
         }
 
-        /* ÁREA SECRETA: Al pasar la mano por aquí se activa el truco */
         #magic-trigger {
-            position: absolute;
-            top: 0;
-            left: 0;
+            position: absolute; top: 0; left: 0; width: 100%; height: 30%; z-index: 1000;
+        }
+
+        .display-container {
             width: 100%;
-            height: 80px;
-            z-index: 100;
-            background: transparent;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 0 10px;
+            margin-bottom: 15px;
+        }
+
+        .history {
+            color: #888;
+            font-size: 1.6rem;
+            text-align: right;
+            min-height: 2rem;
+            font-weight: 400;
+            margin-bottom: 5px;
         }
 
         .display {
-            flex: 1;
-            display: flex;
-            align-items: flex-end;
-            justify-content: flex-end;
-            font-size: 5rem;
+            font-size: clamp(2.5rem, 14vw, 5.5rem);
             font-weight: 300;
-            padding-bottom: 20px;
-            overflow: hidden;
+            white-space: nowrap;
+            letter-spacing: -1px;
+            text-align: right;
+            max-width: 100%;
         }
 
         .grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 12px;
-            margin-bottom: 30px;
         }
 
         .btn {
             aspect-ratio: 1;
             border-radius: 50%;
             border: none;
-            font-size: 1.5rem;
-            font-weight: 500;
+            font-size: 2.1rem;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            transition: opacity 0.1s;
         }
 
-        .btn:active {
-            opacity: 0.7;
-        }
-
-        .btn-gray { background-color: var(--btn-gray); color: white; }
-        .btn-light { background-color: var(--btn-light); color: black; }
-        .btn-orange { background-color: var(--btn-orange); color: white; }
+        .btn:active { filter: brightness(1.4); }
+        .btn-dark { background-color: var(--gray-dark); color: white; }
+        .btn-light { background-color: var(--gray-light); color: black; font-size: 1.7rem; }
+        .btn-orange { background-color: var(--orange); color: white; font-size: 2.4rem; }
         
         .btn-zero {
             grid-column: span 2;
             aspect-ratio: auto;
-            border-radius: 50px;
+            border-radius: 100px;
             justify-content: flex-start;
-            padding-left: 30px;
+            padding-left: 35px;
         }
 
-        /* Animación para la aparición mágica */
-        .magic-appear {
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .backspace-icon { width: 32px; height: 32px; fill: white; }
     </style>
 </head>
 <body>
@@ -110,69 +103,158 @@
     <div id="magic-trigger"></div>
 
     <div class="calculator">
-        <div class="display" id="screen">0</div>
+        <div class="display-container">
+            <div class="history" id="history"></div>
+            <div class="display" id="screen">0</div>
+        </div>
         
         <div class="grid">
-            <button class="btn btn-light">AC</button>
-            <button class="btn btn-light">+/-</button>
-            <button class="btn btn-light">%</button>
-            <button class="btn btn-orange">÷</button>
+            <button class="btn btn-dark" onclick="handleBackspace()">
+                <svg class="backspace-icon" viewBox="0 0 24 24"><path d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-3 12.59L17.59 17 14 13.41 10.41 17 9 15.59 12.59 12 9 8.41 10.41 7 14 10.59 17.59 7 19 8.41 15.41 12 19 15.59z"/></svg>
+            </button>
+            <button class="btn btn-light" id="clear-btn" onclick="clearScreen()">AC</button>
+            <button class="btn btn-light" onclick="vibrate()">%</button>
+            <button class="btn btn-orange" onclick="appendOperator('÷')">÷</button>
             
-            <button class="btn btn-gray">7</button>
-            <button class="btn btn-gray">8</button>
-            <button class="btn btn-gray">9</button>
-            <button class="btn btn-orange">×</button>
+            <button class="btn btn-dark" onclick="appendNumber('7')">7</button>
+            <button class="btn btn-dark" onclick="appendNumber('8')">8</button>
+            <button class="btn btn-dark" onclick="appendNumber('9')">9</button>
+            <button class="btn btn-orange" onclick="appendOperator('×')">×</button>
             
-            <button class="btn btn-gray">4</button>
-            <button class="btn btn-gray">5</button>
-            <button class="btn btn-gray">6</button>
-            <button class="btn btn-orange">-</button>
+            <button class="btn btn-dark" onclick="appendNumber('4')">4</button>
+            <button class="btn btn-dark" onclick="appendNumber('5')">5</button>
+            <button class="btn btn-dark" onclick="appendNumber('6')">6</button>
+            <button class="btn btn-orange" onclick="appendOperator('−')">−</button>
             
-            <button class="btn btn-gray">1</button>
-            <button class="btn btn-gray">2</button>
-            <button class="btn btn-gray">3</button>
-            <button class="btn btn-orange">+</button>
+            <button class="btn btn-dark" onclick="appendNumber('1')">1</button>
+            <button class="btn btn-dark" onclick="appendNumber('2')">2</button>
+            <button class="btn btn-dark" onclick="appendNumber('3')">3</button>
+            <button class="btn btn-orange" onclick="appendOperator('+')">+</button>
             
-            <button class="btn btn-gray btn-zero">0</button>
-            <button class="btn btn-gray">,</button>
-            <button class="btn btn-orange">=</button>
+            <button class="btn btn-dark btn-zero" onclick="appendNumber('0')">0</button>
+            <button class="btn btn-dark" onclick="appendNumber(',')">,</button>
+            <button class="btn btn-orange" onclick="calculate()">=</button>
         </div>
     </div>
 
     <script>
         const screen = document.getElementById('screen');
+        const historyLine = document.getElementById('history');
+        const clearBtn = document.getElementById('clear-btn');
         const trigger = document.getElementById('magic-trigger');
-        let magicDone = false;
+        
+        let currentInput = '0'; 
+        let fullEquation = '';  
+        let isMagicMode = true;
+        let resultDisplayed = false;
 
-        // Función para activar el truco
-        function executeMagic() {
-            if (magicDone) return;
-
-            // Vibración táctil (si el dispositivo lo permite)
-            if (navigator.vibrate) {
-                navigator.vibrate([50, 30, 50]);
-            }
-
-            // Efecto visual: los números aparecen
-            screen.classList.add('magic-appear');
-            screen.innerText = '123456789';
-            
-            magicDone = true;
+        function formatDisplay(val) {
+            // Dividimos por los operadores para formatear solo los números, manteniendo los operadores pegados
+            return val.split(/([×÷+−])/).map(part => {
+                if (!isNaN(part.replace(/\./g, '').replace(',', '.')) && part.trim() !== "") {
+                    let numParts = part.replace(/\./g, '').split(',');
+                    numParts[0] = numParts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                    return numParts.join(',');
+                }
+                return part; 
+            }).join('');
         }
 
-        // Se activa al tocar o pasar el dedo/mano por el área superior
-        trigger.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            executeMagic();
-        });
+        function appendNumber(num) {
+            vibrate();
+            if (resultDisplayed) {
+                currentInput = num;
+                fullEquation = num;
+                historyLine.innerText = '';
+                resultDisplayed = false;
+            } else if (currentInput === '0' || (isMagicMode && currentInput === '123456789')) {
+                currentInput = num;
+                fullEquation = num;
+            } else {
+                currentInput += num;
+                fullEquation += num;
+            }
+            isMagicMode = false;
+            clearBtn.innerText = 'C';
+            screen.innerText = formatDisplay(fullEquation);
+        }
 
-        // También funciona con clic para pruebas en PC
+        function appendOperator(op) {
+            vibrate();
+            isMagicMode = false;
+            if (resultDisplayed) {
+                fullEquation = currentInput;
+                historyLine.innerText = '';
+                resultDisplayed = false;
+            }
+            // Si el último caracter es un operador, lo reemplaza
+            if (/[×÷+−]/.test(fullEquation.slice(-1))) {
+                fullEquation = fullEquation.slice(0, -1);
+            }
+            fullEquation += op;
+            screen.innerText = formatDisplay(fullEquation);
+        }
+
+        function calculate() {
+            if (!fullEquation || /[×÷+−]/.test(fullEquation.slice(-1)) || resultDisplayed) return;
+            vibrate();
+
+            let expression = fullEquation
+                .replace(/\./g, '')
+                .replace(/,/g, '.')
+                .replace(/×/g, '*')
+                .replace(/÷/g, '/')
+                .replace(/−/g, '-');
+
+            try {
+                let result = eval(expression);
+                historyLine.innerText = formatDisplay(fullEquation);
+                
+                currentInput = result.toString().replace('.', ',');
+                fullEquation = currentInput;
+                screen.innerText = formatDisplay(currentInput);
+                
+                resultDisplayed = true;
+                clearBtn.innerText = 'AC';
+            } catch (e) {
+                screen.innerText = 'Error';
+            }
+        }
+
+        function clearScreen() {
+            vibrate();
+            currentInput = '0';
+            fullEquation = '';
+            historyLine.innerText = '';
+            resultDisplayed = false;
+            isMagicMode = true; // Reinicia el modo truco al limpiar todo
+            clearBtn.innerText = 'AC';
+            screen.innerText = '0';
+        }
+
+        function handleBackspace() {
+            vibrate();
+            if (fullEquation.length > 1) {
+                fullEquation = fullEquation.slice(0, -1);
+            } else {
+                fullEquation = '0';
+                clearBtn.innerText = 'AC';
+            }
+            screen.innerText = formatDisplay(fullEquation || '0');
+        }
+
+        function executeMagic() {
+            if (!isMagicMode) return;
+            vibrate();
+            currentInput = '123456789';
+            fullEquation = '123456789';
+            screen.innerText = formatDisplay(fullEquation);
+        }
+
+        function vibrate() { if (navigator.vibrate) navigator.vibrate(30); }
+
+        trigger.addEventListener('touchstart', (e) => { e.preventDefault(); executeMagic(); });
         trigger.addEventListener('mousedown', executeMagic);
-
-        // Bloquear zoom y gestos del navegador para que parezca una App real
-        document.addEventListener('gesturestart', function (e) {
-            e.preventDefault();
-        });
     </script>
 </body>
 </html>
