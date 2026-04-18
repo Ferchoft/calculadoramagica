@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Calculator</title>
+    <style>
+        :root {
+            --bg-color: #000;
+            --btn-gray: #333333;
+            --btn-light: #a5a5a5;
+            --btn-orange: #ff9f0a;
+            --text-white: #ffffff;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-white);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .calculator {
+            width: 100%;
+            max-width: 400px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* ÁREA SECRETA: Al pasar la mano por aquí se activa el truco */
+        #magic-trigger {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            z-index: 100;
+            background: transparent;
+        }
+
+        .display {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            font-size: 5rem;
+            font-weight: 300;
+            padding-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: none;
+            font-size: 1.5rem;
+            font-weight: 500;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: opacity 0.1s;
+        }
+
+        .btn:active {
+            opacity: 0.7;
+        }
+
+        .btn-gray { background-color: var(--btn-gray); color: white; }
+        .btn-light { background-color: var(--btn-light); color: black; }
+        .btn-orange { background-color: var(--btn-orange); color: white; }
+        
+        .btn-zero {
+            grid-column: span 2;
+            aspect-ratio: auto;
+            border-radius: 50px;
+            justify-content: flex-start;
+            padding-left: 30px;
+        }
+
+        /* Animación para la aparición mágica */
+        .magic-appear {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="magic-trigger"></div>
+
+    <div class="calculator">
+        <div class="display" id="screen">0</div>
+        
+        <div class="grid">
+            <button class="btn btn-light">AC</button>
+            <button class="btn btn-light">+/-</button>
+            <button class="btn btn-light">%</button>
+            <button class="btn btn-orange">÷</button>
+            
+            <button class="btn btn-gray">7</button>
+            <button class="btn btn-gray">8</button>
+            <button class="btn btn-gray">9</button>
+            <button class="btn btn-orange">×</button>
+            
+            <button class="btn btn-gray">4</button>
+            <button class="btn btn-gray">5</button>
+            <button class="btn btn-gray">6</button>
+            <button class="btn btn-orange">-</button>
+            
+            <button class="btn btn-gray">1</button>
+            <button class="btn btn-gray">2</button>
+            <button class="btn btn-gray">3</button>
+            <button class="btn btn-orange">+</button>
+            
+            <button class="btn btn-gray btn-zero">0</button>
+            <button class="btn btn-gray">,</button>
+            <button class="btn btn-orange">=</button>
+        </div>
+    </div>
+
+    <script>
+        const screen = document.getElementById('screen');
+        const trigger = document.getElementById('magic-trigger');
+        let magicDone = false;
+
+        // Función para activar el truco
+        function executeMagic() {
+            if (magicDone) return;
+
+            // Vibración táctil (si el dispositivo lo permite)
+            if (navigator.vibrate) {
+                navigator.vibrate([50, 30, 50]);
+            }
+
+            // Efecto visual: los números aparecen
+            screen.classList.add('magic-appear');
+            screen.innerText = '123456789';
+            
+            magicDone = true;
+        }
+
+        // Se activa al tocar o pasar el dedo/mano por el área superior
+        trigger.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            executeMagic();
+        });
+
+        // También funciona con clic para pruebas en PC
+        trigger.addEventListener('mousedown', executeMagic);
+
+        // Bloquear zoom y gestos del navegador para que parezca una App real
+        document.addEventListener('gesturestart', function (e) {
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>
