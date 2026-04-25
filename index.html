@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Calculadora</title>
     <style>
         :root {
@@ -13,9 +15,9 @@
             --text-white: #FFFFFF;
         }
 
-        * { 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent; 
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
             user-select: none;
         }
@@ -39,7 +41,12 @@
         }
 
         #magic-trigger {
-            position: absolute; top: 0; left: 0; width: 100%; height: 30%; z-index: 1000;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 30%;
+            z-index: 1000;
         }
 
         .display-container {
@@ -87,11 +94,27 @@
             cursor: pointer;
         }
 
-        .btn:active { filter: brightness(1.4); }
-        .btn-dark { background-color: var(--gray-dark); color: white; }
-        .btn-light { background-color: var(--gray-light); color: black; font-size: 1.7rem; }
-        .btn-orange { background-color: var(--orange); color: white; font-size: 2.4rem; }
-        
+        .btn:active {
+            filter: brightness(1.4);
+        }
+
+        .btn-dark {
+            background-color: var(--gray-dark);
+            color: white;
+        }
+
+        .btn-light {
+            background-color: var(--gray-light);
+            color: black;
+            font-size: 1.7rem;
+        }
+
+        .btn-orange {
+            background-color: var(--orange);
+            color: white;
+            font-size: 2.4rem;
+        }
+
         .btn-zero {
             grid-column: span 2;
             aspect-ratio: auto;
@@ -100,9 +123,14 @@
             padding-left: 35px;
         }
 
-        .backspace-icon { width: 32px; height: 32px; fill: white; }
+        .backspace-icon {
+            width: 32px;
+            height: 32px;
+            fill: white;
+        }
     </style>
 </head>
+
 <body>
 
     <div id="magic-trigger"></div>
@@ -112,30 +140,33 @@
             <div class="history" id="history"></div>
             <div class="display" id="screen">0</div>
         </div>
-        
+
         <div class="grid">
             <button class="btn btn-dark" onclick="handleBackspace()">
-                <svg class="backspace-icon" viewBox="0 0 24 24"><path d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-3 12.59L17.59 17 14 13.41 10.41 17 9 15.59 12.59 12 9 8.41 10.41 7 14 10.59 17.59 7 19 8.41 15.41 12 19 15.59z"/></svg>
+                <svg class="backspace-icon" viewBox="0 0 24 24">
+                    <path
+                        d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-3 12.59L17.59 17 14 13.41 10.41 17 9 15.59 12.59 12 9 8.41 10.41 7 14 10.59 17.59 7 19 8.41 15.41 12 19 15.59z" />
+                </svg>
             </button>
             <button class="btn btn-light" id="clear-btn" onclick="clearScreen()">AC</button>
             <button class="btn btn-light" onclick="handlePercentage()">%</button>
             <button class="btn btn-orange" onclick="appendOperator('÷')">÷</button>
-            
+
             <button class="btn btn-dark" onclick="appendNumber('7')">7</button>
             <button class="btn btn-dark" onclick="appendNumber('8')">8</button>
             <button class="btn btn-dark" onclick="appendNumber('9')">9</button>
             <button class="btn btn-orange" onclick="appendOperator('×')">×</button>
-            
+
             <button class="btn btn-dark" onclick="appendNumber('4')">4</button>
             <button class="btn btn-dark" onclick="appendNumber('5')">5</button>
             <button class="btn btn-dark" onclick="appendNumber('6')">6</button>
             <button class="btn btn-orange" onclick="appendOperator('−')">−</button>
-            
+
             <button class="btn btn-dark" onclick="appendNumber('1')">1</button>
             <button class="btn btn-dark" onclick="appendNumber('2')">2</button>
             <button class="btn btn-dark" onclick="appendNumber('3')">3</button>
             <button class="btn btn-orange" onclick="appendOperator('+')">+</button>
-            
+
             <button class="btn btn-dark btn-zero" onclick="appendNumber('0')">0</button>
             <button class="btn btn-dark" onclick="appendNumber(',')">,</button>
             <button class="btn btn-orange" onclick="calculate()">=</button>
@@ -147,9 +178,9 @@
         const historyLine = document.getElementById('history');
         const clearBtn = document.getElementById('clear-btn');
         const trigger = document.getElementById('magic-trigger');
-        
-        let currentInput = '0'; 
-        let fullEquation = '';  
+
+        let currentInput = '0';
+        let fullEquation = '';
         let isMagicMode = true;
         let magicStep = 0;
         let resultDisplayed = false;
@@ -164,7 +195,7 @@
                     numParts[0] = numParts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                     return numParts.join(',');
                 }
-                return part; 
+                return part;
             }).join('');
         }
 
@@ -213,7 +244,7 @@
             vibrate();
             resetMagic();
             if (!fullEquation || /[×÷+−]/.test(fullEquation.slice(-1))) return;
-            
+
             try {
                 let expression = fullEquation.replace(/\./g, '').replace(/,/g, '.').replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
                 let result = eval(expression) / 100;
@@ -221,7 +252,7 @@
                 fullEquation = currentInput;
                 screen.innerText = formatDisplay(currentInput);
                 resultDisplayed = true;
-            } catch(e) {
+            } catch (e) {
                 screen.innerText = 'Error';
             }
         }
@@ -241,11 +272,11 @@
             try {
                 let result = eval(expression);
                 historyLine.innerText = formatDisplay(fullEquation);
-                
+
                 currentInput = result.toString().replace('.', ',');
                 fullEquation = currentInput;
                 screen.innerText = formatDisplay(currentInput);
-                
+
                 resultDisplayed = true;
                 clearBtn.innerText = 'AC';
             } catch (e) {
@@ -260,7 +291,7 @@
             fullEquation = '';
             historyLine.innerText = '';
             resultDisplayed = false;
-            isMagicMode = true; 
+            isMagicMode = true;
             clearBtn.innerText = 'AC';
             screen.innerText = '0';
         }
@@ -281,14 +312,14 @@
             if (!isMagicMode) return;
             vibrate();
             magicStep++;
-            
+
             if (magicStep === 1) {
                 currentInput = '123456789';
                 fullEquation = '123456789';
                 screen.innerText = formatDisplay(fullEquation);
                 screen.style.fontSize = "";
             } else if (magicStep === 2) {
-                screen.innerText = "¿TE GUSTÓ EL TRUCO?";
+                screen.innerText = "¿TE GUSTÓ EL TRUCO SILVERIO?";
                 screen.style.fontSize = "1.85rem";
                 currentInput = '';
                 fullEquation = '';
@@ -302,14 +333,14 @@
 
         trigger.addEventListener('touchstart', (e) => {
             touchStartX = e.changedTouches[0].screenX;
-        }, {passive: true});
+        }, { passive: true });
 
         trigger.addEventListener('touchend', (e) => {
             touchEndX = e.changedTouches[0].screenX;
-            if (touchStartX - touchEndX > 50) { 
+            if (touchStartX - touchEndX > 50) {
                 executeMagic();
             }
-        }, {passive: true});
+        }, { passive: true });
 
         let isDragging = false;
         trigger.addEventListener('mousedown', (e) => {
@@ -327,4 +358,5 @@
         });
     </script>
 </body>
+
 </html>
