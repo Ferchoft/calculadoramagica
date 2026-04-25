@@ -153,6 +153,8 @@
         let isMagicMode = true;
         let magicStep = 0;
         let resultDisplayed = false;
+        let touchStartX = 0;
+        let touchEndX = 0;
 
         function formatDisplay(val) {
             if (!val) return '0';
@@ -298,8 +300,31 @@
 
         function vibrate() { if (navigator.vibrate) navigator.vibrate(30); }
 
-        trigger.addEventListener('touchstart', (e) => { e.preventDefault(); executeMagic(); });
-        trigger.addEventListener('mousedown', executeMagic);
+        trigger.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, {passive: true});
+
+        trigger.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            if (touchStartX - touchEndX > 50) { 
+                executeMagic();
+            }
+        }, {passive: true});
+
+        let isDragging = false;
+        trigger.addEventListener('mousedown', (e) => {
+            touchStartX = e.clientX;
+            isDragging = true;
+        });
+
+        trigger.addEventListener('mouseup', (e) => {
+            if (!isDragging) return;
+            touchEndX = e.clientX;
+            if (touchStartX - touchEndX > 50) {
+                executeMagic();
+            }
+            isDragging = false;
+        });
     </script>
 </body>
 </html>
